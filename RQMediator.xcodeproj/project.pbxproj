@@ -16,6 +16,7 @@
 		2941B5E124B5D7A400FAD065 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 2941B5E024B5D7A400FAD065 /* main.m */; };
 		2941B5EB24B5D7A500FAD065 /* RQMediatorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2941B5EA24B5D7A500FAD065 /* RQMediatorTests.m */; };
 		2941B5F624B5D7A500FAD065 /* RQMediatorUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = 2941B5F524B5D7A500FAD065 /* RQMediatorUITests.m */; };
+		2941B60624B610AF00FAD065 /* RQMediator.m in Sources */ = {isa = PBXBuildFile; fileRef = 2941B60524B610AF00FAD065 /* RQMediator.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,8 @@
 		2941B5F124B5D7A500FAD065 /* RQMediatorUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RQMediatorUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2941B5F524B5D7A500FAD065 /* RQMediatorUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RQMediatorUITests.m; sourceTree = "<group>"; };
 		2941B5F724B5D7A500FAD065 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		2941B60424B610AF00FAD065 /* RQMediator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RQMediator.h; sourceTree = "<group>"; };
+		2941B60524B610AF00FAD065 /* RQMediator.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RQMediator.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -104,6 +107,7 @@
 		2941B5CD24B5D7A300FAD065 /* RQMediator */ = {
 			isa = PBXGroup;
 			children = (
+				2941B60324B6108B00FAD065 /* RQMediator */,
 				2941B5CE24B5D7A300FAD065 /* AppDelegate.h */,
 				2941B5CF24B5D7A300FAD065 /* AppDelegate.m */,
 				2941B5D124B5D7A300FAD065 /* SceneDelegate.h */,
@@ -135,6 +139,15 @@
 				2941B5F724B5D7A500FAD065 /* Info.plist */,
 			);
 			path = RQMediatorUITests;
+			sourceTree = "<group>";
+		};
+		2941B60324B6108B00FAD065 /* RQMediator */ = {
+			isa = PBXGroup;
+			children = (
+				2941B60424B610AF00FAD065 /* RQMediator.h */,
+				2941B60524B610AF00FAD065 /* RQMediator.m */,
+			);
+			path = RQMediator;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -268,6 +281,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2941B5D624B5D7A300FAD065 /* ViewController.m in Sources */,
+				2941B60624B610AF00FAD065 /* RQMediator.m in Sources */,
 				2941B5D024B5D7A300FAD065 /* AppDelegate.m in Sources */,
 				2941B5E124B5D7A400FAD065 /* main.m in Sources */,
 				2941B5D324B5D7A300FAD065 /* SceneDelegate.m in Sources */,
