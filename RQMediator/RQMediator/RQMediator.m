@@ -7,10 +7,12 @@
 //
 
 #import "RQMediator.h"
+#import <objc/runtime.h>
 
+NSString * const RQMediatorSwiftTargetModuleParamsKey = @"kRQMediatorSwiftTargetModuleParamsKey";
 @interface RQMediator ()
 
-@property (nonatomic, strong) NSMutableArray * targetCache;
+@property (nonatomic, strong) NSMutableDictionary *targetCache;
 
 @end
 
@@ -28,47 +30,187 @@
     return mediator;
 }
 
-- (void)openURL:(NSURL *)url
+- (id _Nullable)openURL:(NSURL *)url
 {
-    [self openURL:url completionHandler:NULL];
+    return [self openURL:url completionHandler:NULL];
 }
 
-- (void)openURL:(NSURL *)url completionHandler:(void (^ _Nullable)(NSDictionary * info))completion
+- (id _Nullable)openURL:(NSURL *)url completionHandler:(void (^ _Nullable)(NSDictionary * info))completion
 {
+    if (url == nil) return nil;
     
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    NSArray  *paramArray = [url.query componentsSeparatedByString:@"&"];
+    for (NSString *param in paramArray) {
+        NSArray *keyValues = [param componentsSeparatedByString:@"="];
+        if ([keyValues count] < 2) continue;
+        [params setObject:keyValues.lastObject forKey:keyValues.firstObject];
+    }
+    
+    // 出于安全考虑，防止黑客通过远程方式调用本地模块。
+    NSString *action = [url.path stringByReplacingOccurrencesOfString:@"/" withString:@""];
+    if ([action hasPrefix:@"native"]) {
+        return @(NO);
+    }
+    
+    id result = [self sendAction:action to:url.host params:params cache:NO];
+    if (completion) {
+        if (result) {
+            completion(@{@"result":result});
+        } else {
+            completion(nil);
+        }
+    }
+    
+    return result;
 }
 
-- (void)sendAction:(NSString * _Nullable)action to:(NSString * _Nullable)target
+- (id _Nullable)sendAction:(NSString * _Nullable)actionString to:(NSString * _Nullable)targetString
 {
-    [self sendAction:action to:target params:nil];
+    return [self sendAction:actionString to:targetString params:nil];
 }
 
-- (void)sendAction:(NSString * _Nullable)action
-                to:(NSString * _Nullable)target
+- (id _Nullable)sendAction:(NSString * _Nullable)actionString
+                to:(NSString * _Nullable)targetString
             params:(NSDictionary * _Nullable)params
 {
-    [self sendAction:action to:target params:params cache:NO];
+    return [self sendAction:actionString to:targetString params:params cache:NO];
 }
 
-- (void)sendAction:(NSString * _Nullable)action
-                to:(NSString * _Nullable)target
-            params:(NSDictionary * _Nullable)params
-             cache:(BOOL)isCacheTarget
+- (id _Nullable)sendAction:(NSString * _Nullable)actionString
+                        to:(NSString * _Nullable)targetString
+                    params:(NSDictionary * _Nullable)params
+                     cache:(BOOL)isCacheTarget
 {
+    if (actionString == nil || targetString == nil) {
+        return nil;
+    }
     
+    // 生成target
+    NSString *swiftModuleName = params[RQMediatorSwiftTargetModuleParamsKey];
+    NSString *targetName = nil;
+    if (swiftModuleName.length > 0) {
+        targetName = [NSString stringWithFormat:@"%@.Target_%@",swiftModuleName,targetString];
+    } else {
+        targetName = [NSString stringWithFormat:@"Target_%@",targetString];
+    }
+    NSObject *target = self.targetCache[targetName];
+    if (target == nil) {
+        Class targetClass = NSClassFromString(targetName);
+        target = [[targetClass alloc] init];
+    }
+    
+    // 生成action
+    NSString *actionName = [NSString stringWithFormat:@"Action_%@:",actionString];
+    SEL action = NSSelectorFromString(actionName);
+    
+    // 处理无响应者
+    if (target == nil) {
+        [self _noTargetWith:targetName selectorString:actionName params:params];
+        return nil;
+    }
+    
+    if (isCacheTarget) {
+        self.targetCache[targetName] = target;
+    } else {
+        [self removeTargetCacheWith:targetName];
+    }
+    
+    if ([target respondsToSelector:action]) {
+        return [self _safePerformAction:action target:target params:params];
+    } else {
+        
+        SEL action = NSSelectorFromString(@"notFound:");
+        
+        if ([target respondsToSelector:action]) {
+            return [self _safePerformAction:action target:target params:params];
+        } else {
+            
+            [self _noTargetWith:targetName selectorString:actionName params:params];
+            [self removeTargetCacheWith:targetName];
+            return nil;
+        }
+    }
 }
 
-- (void)removeTargetCacheWith:(NSString *)target
+- (void)removeTargetCacheWith:(NSString *)targetName
 {
+    if (targetName == nil) {
+        return;
+    }
+    if ([self.targetCache.allKeys containsObject:targetName]) {
+        [self.targetCache removeObjectForKey:targetName];
+    }
+}
+
+#pragma mark - private methods
+
+- (void)_noTargetWith:(NSString *)targetString selectorString:(NSString *)selectorString params:(NSDictionary *)originParams
+{
+    SEL action = NSSelectorFromString(@"Action_response:");
+    NSObject *target = [[NSClassFromString(@"Target_NoTargetAction") alloc] init];
     
+    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    params[@"originParams"] = originParams;
+    params[@"targetString"] = targetString;
+    params[@"selectorString"] = selectorString;
+    
+    [self _safePerformAction:action target:target params:params];
+}
+
+- (id)_safePerformAction:(SEL)action target:(NSObject *)target params:(NSDictionary *)params
+{
+    NSMethodSignature *methodSign = [target methodSignatureForSelector:action];
+    if (methodSign == nil) return nil;
+    
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
+    [invocation setArgument:&params atIndex:2];
+    [invocation setSelector:action];
+    [invocation setTarget:target];
+    [invocation invoke];
+    
+    const char *returnType = [methodSign methodReturnType];
+    
+    if (strcmp(returnType, @encode(void)) == 0) {
+        return nil;
+    }
+    
+    if (strcmp(returnType, @encode(BOOL)) == 0) {
+        BOOL result = NO;
+        [invocation getReturnValue:&result];
+        return @(result);
+    }
+    
+    if (strcmp(returnType, @encode(CGFloat)) == 0) {
+        CGFloat result = 0;
+        [invocation getReturnValue:&result];
+        return @(result);
+    }
+    
+    if (strcmp(returnType, @encode(NSInteger)) == 0) {
+        NSInteger result = 0;
+        [invocation getReturnValue:&result];
+        return @(result);
+    }
+    
+    if (strcmp(returnType, @encode(NSUInteger)) == 0) {
+        NSUInteger result = 0;
+        [invocation getReturnValue:&result];
+        return @(result);
+    }
+    
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
+    return [target performSelector:action withObject:params];
+#pragma clang diagnostic pop
 }
 
 #pragma mark - setter and getter
 
-- (NSMutableArray *)targetCache
+- (NSMutableDictionary *)targetCache
 {
     if (!_targetCache) {
-        _targetCache = [[NSMutableArray alloc] init];
+        _targetCache = [NSMutableDictionary dictionary];
     }
     return _targetCache;
 }

@@ -8,32 +8,34 @@
 
 //- (void)openURL:(NSURL*)url options:(NSDictionary<UIApplicationOpenExternalURLOptionsKey, id> *)options completionHandler:(void (^ __nullable)(BOOL success))completion
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+extern NSString * const RQMediatorSwiftTargetModuleParamsKey;
 
 @interface RQMediator : NSObject
 
 + (instancetype)sharedMediator;
 
 // 外部组件调用入口
-- (void)openURL:(NSURL *)url;
+- (id _Nullable)openURL:(NSURL *)url;
 
-- (void)openURL:(NSURL *)url completionHandler:(void (^ _Nullable)(NSDictionary * info))completion;
+- (id _Nullable)openURL:(NSURL *)url completionHandler:(void (^ _Nullable)(NSDictionary * info))completion;
 
 // 内部组件调用入口
-- (void)sendAction:(NSString * _Nullable)action to:(NSString * _Nullable)target;
+- (id _Nullable)sendAction:(NSString * _Nullable)actionString to:(NSString * _Nullable)targetString;
 
-- (void)sendAction:(NSString * _Nullable)action
-                to:(NSString * _Nullable)target
-            params:(NSDictionary * _Nullable)params;
+- (id _Nullable)sendAction:(NSString * _Nullable)actionString
+                        to:(NSString * _Nullable)targetString
+                    params:(NSDictionary * _Nullable)params;
 
-- (void)sendAction:(NSString * _Nullable)action
-                to:(NSString * _Nullable)target
-            params:(NSDictionary * _Nullable)params
-             cache:(BOOL)isCacheTarget;
+- (id _Nullable)sendAction:(NSString * _Nullable)actionString
+                        to:(NSString * _Nullable)targetString
+                    params:(NSDictionary * _Nullable)params
+                     cache:(BOOL)isCacheTarget;
 
-- (void)removeTargetCacheWith:(NSString *)target;
+- (void)removeTargetCacheWith:(NSString *)targetName;
 
 @end
 

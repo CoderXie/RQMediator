@@ -18,7 +18,7 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
     
-    [UIAlertController performSelector:@selector(@"") withObject:nil afterDelay:1];
+//    [UIAlertController performSelector:@selector() withObject:nil afterDelay:1];
     [[UIApplication sharedApplication] openURL:nil options:nil completionHandler:^(BOOL success) {
         
     }];
