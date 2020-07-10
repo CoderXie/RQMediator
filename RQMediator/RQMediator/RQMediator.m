@@ -30,6 +30,12 @@ NSString * const RQMediatorSwiftTargetModuleParamsKey = @"kRQMediatorSwiftTarget
     return mediator;
 }
 
+/*
+scheme://[target]/[action]?[params]
+
+url sample:
+aaa://targetA/actionB?id=1234
+*/
 - (id _Nullable)openURL:(NSURL *)url
 {
     return [self openURL:url completionHandler:NULL];
@@ -71,8 +77,8 @@ NSString * const RQMediatorSwiftTargetModuleParamsKey = @"kRQMediatorSwiftTarget
 }
 
 - (id _Nullable)sendAction:(NSString * _Nullable)actionString
-                to:(NSString * _Nullable)targetString
-            params:(NSDictionary * _Nullable)params
+                        to:(NSString * _Nullable)targetString
+                    params:(NSDictionary * _Nullable)params
 {
     return [self sendAction:actionString to:targetString params:params cache:NO];
 }
@@ -90,9 +96,9 @@ NSString * const RQMediatorSwiftTargetModuleParamsKey = @"kRQMediatorSwiftTarget
     NSString *swiftModuleName = params[RQMediatorSwiftTargetModuleParamsKey];
     NSString *targetName = nil;
     if (swiftModuleName.length > 0) {
-        targetName = [NSString stringWithFormat:@"%@.Target_%@",swiftModuleName,targetString];
+        targetName = [NSString stringWithFormat:@"%@.%@",swiftModuleName,targetString];
     } else {
-        targetName = [NSString stringWithFormat:@"Target_%@",targetString];
+        targetName = [NSString stringWithFormat:@"%@",targetString];
     }
     NSObject *target = self.targetCache[targetName];
     if (target == nil) {
@@ -101,7 +107,7 @@ NSString * const RQMediatorSwiftTargetModuleParamsKey = @"kRQMediatorSwiftTarget
     }
     
     // 生成action
-    NSString *actionName = [NSString stringWithFormat:@"Action_%@:",actionString];
+    NSString *actionName = [NSString stringWithFormat:@"%@",actionString];
     SEL action = NSSelectorFromString(actionName);
     
     // 处理无响应者
@@ -125,7 +131,6 @@ NSString * const RQMediatorSwiftTargetModuleParamsKey = @"kRQMediatorSwiftTarget
         if ([target respondsToSelector:action]) {
             return [self _safePerformAction:action target:target params:params];
         } else {
-            
             [self _noTargetWith:targetName selectorString:actionName params:params];
             [self removeTargetCacheWith:targetName];
             return nil;
@@ -163,37 +168,66 @@ NSString * const RQMediatorSwiftTargetModuleParamsKey = @"kRQMediatorSwiftTarget
     NSMethodSignature *methodSign = [target methodSignatureForSelector:action];
     if (methodSign == nil) return nil;
     
-    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
-    [invocation setArgument:&params atIndex:2];
-    [invocation setSelector:action];
-    [invocation setTarget:target];
-    [invocation invoke];
-    
     const char *returnType = [methodSign methodReturnType];
     
     if (strcmp(returnType, @encode(void)) == 0) {
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
+        if (params) {
+            [invocation setArgument:&params atIndex:2];
+        }
+        [invocation setSelector:action];
+        [invocation setTarget:target];
+        [invocation invoke];
         return nil;
     }
     
     if (strcmp(returnType, @encode(BOOL)) == 0) {
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
+        if (params) {
+            [invocation setArgument:&params atIndex:2];
+        }
+        [invocation setSelector:action];
+        [invocation setTarget:target];
+        [invocation invoke];
         BOOL result = NO;
         [invocation getReturnValue:&result];
         return @(result);
     }
     
     if (strcmp(returnType, @encode(CGFloat)) == 0) {
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
+        if (params) {
+            [invocation setArgument:&params atIndex:2];
+        }
+        [invocation setSelector:action];
+        [invocation setTarget:target];
+        [invocation invoke];
         CGFloat result = 0;
         [invocation getReturnValue:&result];
         return @(result);
     }
     
     if (strcmp(returnType, @encode(NSInteger)) == 0) {
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
+        if (params) {
+            [invocation setArgument:&params atIndex:2];
+        }
+        [invocation setSelector:action];
+        [invocation setTarget:target];
+        [invocation invoke];
         NSInteger result = 0;
         [invocation getReturnValue:&result];
         return @(result);
     }
     
     if (strcmp(returnType, @encode(NSUInteger)) == 0) {
+        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
+        if (params) {
+            [invocation setArgument:&params atIndex:2];
+        }
+        [invocation setSelector:action];
+        [invocation setTarget:target];
+        [invocation invoke];
         NSUInteger result = 0;
         [invocation getReturnValue:&result];
         return @(result);
