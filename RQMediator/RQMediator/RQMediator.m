@@ -165,53 +165,53 @@ aaa://targetA/actionB?id=1234
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
     [invocation setSelector:action];
     [invocation setTarget:target];
-    
     NSUInteger count = MIN(methodSign.numberOfArguments - 2, params.count);
     for (int i = 0; i < count; i++) {
         id object = params[i];
-        [invocation setArgument:&object atIndex:2 + i];
+        if ([object isKindOfClass:[NSNull class]]) object = nil;
+        [invocation setArgument:&object atIndex:i + 2];
     }
-    
     [invocation invoke];
     
-    if (strcmp(methodSign.methodReturnType, @encode(void)) == 0) {
+    const char *type = methodSign.methodReturnType;
+    if (strcmp(type, @encode(void)) == 0) {
         return nil;
     }
     
-    if (strcmp(methodSign.methodReturnType, @encode(int)) == 0) {
+    if (strcmp(type, "@") == 0) {
+        id result = nil;
+        [invocation getReturnValue:&result];
+        return result;
+    }
+    
+    if (strcmp(type, @encode(int)) == 0) {
         int result = 0;
         [invocation getReturnValue:&result];
         return @(result);
     }
     
-    if (strcmp(methodSign.methodReturnType, @encode(NSInteger)) == 0) {
+    if (strcmp(type, @encode(NSInteger)) == 0) {
         NSInteger result = 0;
         [invocation getReturnValue:&result];
         return @(result);
     }
     
-    if (strcmp(methodSign.methodReturnType, @encode(BOOL)) == 0) {
+    if (strcmp(type, @encode(BOOL)) == 0) {
         BOOL result = 0;
         [invocation getReturnValue:&result];
         return @(result);
     }
     
-    if (strcmp(methodSign.methodReturnType, @encode(CGFloat)) == 0) {
+    if (strcmp(type, @encode(CGFloat)) == 0) {
         CGFloat result = 0.f;
         [invocation getReturnValue:&result];
         return @(result);
     }
     
-    if (strcmp(methodSign.methodReturnType, @encode(NSUInteger)) == 0) {
+    if (strcmp(type, @encode(NSUInteger)) == 0) {
         NSUInteger result = 0;
         [invocation getReturnValue:&result];
         return @(result);
-    }
-    
-    if (strcmp(methodSign.methodReturnType, "@") == 0) {
-        id result = nil;
-        [invocation getReturnValue:&result];
-        return result;
     }
     
     return nil;

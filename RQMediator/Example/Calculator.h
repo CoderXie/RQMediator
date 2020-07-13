@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)calculatorLog;
 
-- (int)plusA:(int)a b:(int)b;
+- (int)plusA:(NSNumber *)a b:(NSNumber *)b;
 
 - (NSString *)stringForCalculator;
 

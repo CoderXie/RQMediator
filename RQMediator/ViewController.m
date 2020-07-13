@@ -8,6 +8,7 @@
 
 #import "ViewController.h"
 #import "RQMediator.h"
+#import "Calculator.h"
 
 @interface ViewController ()
 
@@ -27,9 +28,14 @@
 
 - (IBAction)plus:(id)sender
 {
+//    Calculator * cal = [Calculator new];
+//    int res = [cal plusA:3 b:5];
+//    NSLog(@"%d",res);
+//    NSLog(@"%@",[NSThread callStackSymbols]);
+//    return;
     NSArray *params = @[@(2),@(3)];
     id result = [[RQMediator sharedMediator] sendAction:@"plusA:b:" to:@"Calculator" params:params];
-    NSLog(@"%@",result);
+    NSLog(@"%d",[result intValue]);
 }
 
 - (IBAction)nsstring:(id)sender

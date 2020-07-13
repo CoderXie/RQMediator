@@ -15,9 +15,9 @@
     NSLog(@"calculatorLog");
 }
 
-- (int)plusA:(int)a b:(int)b
+- (int)plusA:(NSNumber *)a b:(NSNumber *)b
 {
-    return a + b;
+    return a.intValue + b.intValue;
 }
 
 - (NSString *)stringForCalculator
