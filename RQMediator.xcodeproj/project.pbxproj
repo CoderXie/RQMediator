@@ -230,6 +230,7 @@
 				TargetAttributes = {
 					2941B5CA24B5D7A300FAD065 = {
 						CreatedOnToolsVersion = 11.5;
+						LastSwiftMigration = 1150;
 					};
 					2941B5E524B5D7A400FAD065 = {
 						CreatedOnToolsVersion = 11.5;
@@ -467,6 +468,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8XFCSZTN87;
 				INFOPLIST_FILE = RQMediator/Info.plist;
@@ -476,6 +478,9 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.renqiangxie.RQMediator;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "RQMediator/Example/RQMediator-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -484,6 +489,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 8XFCSZTN87;
 				INFOPLIST_FILE = RQMediator/Info.plist;
@@ -493,6 +499,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.renqiangxie.RQMediator;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "RQMediator/Example/RQMediator-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

@@ -27,8 +27,9 @@
 
 - (IBAction)plus:(id)sender
 {
-    NSDictionary *params = @{@"a":@(2),@"b":@(3)};
-    [[RQMediator sharedMediator] sendAction:@"plusA:b:" to:@"Calculator" params:params];
+    NSArray *params = @[@(2),@(3)];
+    id result = [[RQMediator sharedMediator] sendAction:@"plusA:b:" to:@"Calculator" params:params];
+    NSLog(@"%@",result);
 }
 
 - (IBAction)nsstring:(id)sender

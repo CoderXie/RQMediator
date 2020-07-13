@@ -53,11 +53,7 @@ aaa://targetA/actionB?id=1234
         [params addObject:keyValues.lastObject];
     }
     
-    // 出于安全考虑，防止黑客通过远程方式调用本地模块。
     NSString *action = [url.path stringByReplacingOccurrencesOfString:@"/" withString:@""];
-    if ([action hasPrefix:@"native"]) {
-        return @(NO);
-    }
     
     id result = [self sendAction:action to:url.host params:params cache:NO];
     if (completion) {
@@ -92,14 +88,12 @@ aaa://targetA/actionB?id=1234
         return nil;
     }
     
-    // 生成target
-//    NSString *swiftModuleName = params[RQMediatorSwiftTargetModuleParamsKey];
-    NSString *targetName = nil;
-//    if (swiftModuleName.length > 0) {
-//        targetName = [NSString stringWithFormat:@"%@.%@",swiftModuleName,targetString];
-//    } else {
-        targetName = [NSString stringWithFormat:@"%@",targetString];
-//    }
+    // 生成objc target
+    NSString *targetName = [NSString stringWithFormat:@"%@",targetString];
+    
+    // 生成swift target
+    // 待续。。。
+    
     NSObject *target = self.targetCache[targetName];
     if (target == nil) {
         Class targetClass = NSClassFromString(targetName);
@@ -168,23 +162,59 @@ aaa://targetA/actionB?id=1234
     NSMethodSignature *methodSign = [target methodSignatureForSelector:action];
     if (methodSign == nil) return nil;
     
-    NSUInteger count = MIN(methodSign.numberOfArguments - 2, params.count);
-    for (int i = 0; i < count; i++) {
-        
-    }
     NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
-    if (params) {
-        [invocation setArgument:&params atIndex:2];
-    }
     [invocation setSelector:action];
     [invocation setTarget:target];
+    
+    NSUInteger count = MIN(methodSign.numberOfArguments - 2, params.count);
+    for (int i = 0; i < count; i++) {
+        id object = params[i];
+        [invocation setArgument:&object atIndex:2 + i];
+    }
+    
     [invocation invoke];
     
+    if (strcmp(methodSign.methodReturnType, @encode(void)) == 0) {
+        return nil;
+    }
     
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-    return [target performSelector:action withObject:params];
-#pragma clang diagnostic pop
+    if (strcmp(methodSign.methodReturnType, @encode(int)) == 0) {
+        int result = 0;
+        [invocation getReturnValue:&result];
+        return @(result);
+    }
+    
+    if (strcmp(methodSign.methodReturnType, @encode(NSInteger)) == 0) {
+        NSInteger result = 0;
+        [invocation getReturnValue:&result];
+        return @(result);
+    }
+    
+    if (strcmp(methodSign.methodReturnType, @encode(BOOL)) == 0) {
+        BOOL result = 0;
+        [invocation getReturnValue:&result];
+        return @(result);
+    }
+    
+    if (strcmp(methodSign.methodReturnType, @encode(CGFloat)) == 0) {
+        CGFloat result = 0.f;
+        [invocation getReturnValue:&result];
+        return @(result);
+    }
+    
+    if (strcmp(methodSign.methodReturnType, @encode(NSUInteger)) == 0) {
+        NSUInteger result = 0;
+        [invocation getReturnValue:&result];
+        return @(result);
+    }
+    
+    if (strcmp(methodSign.methodReturnType, "@") == 0) {
+        id result = nil;
+        [invocation getReturnValue:&result];
+        return result;
+    }
+    
+    return nil;
 }
 
 #pragma mark - setter and getter
