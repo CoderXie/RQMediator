@@ -7,6 +7,7 @@
 //
 
 #import "SceneDelegate.h"
+#import "RQMediator.h"
 
 @interface SceneDelegate ()
 
@@ -54,5 +55,17 @@
     // to restore the scene back to its current state.
 }
 
+- (void)scene:(UIScene *)scene openURLContexts:(NSSet<UIOpenURLContext *> *)URLContexts
+{
+    NSEnumerator *enumerator = [URLContexts objectEnumerator];
+    UIOpenURLContext *context;
+    while (context = [enumerator nextObject]) {
+        NSLog(@"context.URL =====%@",context.URL);
+        NSLog(@"context.options.sourceApplication ===== %@",context.options.sourceApplication);
+        
+        id result = [[RQMediator sharedMediator] openURL:context.URL];
+        NSLog(@"%@",result);
+    }
+}
 
 @end
