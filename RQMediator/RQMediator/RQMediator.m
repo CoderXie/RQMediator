@@ -36,21 +36,21 @@ scheme://[target]/[action]?[params]
 url sample:
 aaa://targetA/actionB?id=1234
 */
-- (id _Nullable)openURL:(NSURL *)url
+- (id)openURL:(NSURL *)url
 {
     return [self openURL:url completionHandler:NULL];
 }
 
-- (id _Nullable)openURL:(NSURL *)url completionHandler:(void (^ _Nullable)(NSDictionary * info))completion
+- (id)openURL:(NSURL *)url completionHandler:(void (^ _Nullable)(id info))completion
 {
     if (url == nil) return nil;
     
-    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+    NSMutableArray *params = [NSMutableArray array];
     NSArray  *paramArray = [url.query componentsSeparatedByString:@"&"];
     for (NSString *param in paramArray) {
         NSArray *keyValues = [param componentsSeparatedByString:@"="];
         if ([keyValues count] < 2) continue;
-        [params setObject:keyValues.lastObject forKey:keyValues.firstObject];
+        [params addObject:keyValues.lastObject];
     }
     
     // 出于安全考虑，防止黑客通过远程方式调用本地模块。
@@ -62,7 +62,7 @@ aaa://targetA/actionB?id=1234
     id result = [self sendAction:action to:url.host params:params cache:NO];
     if (completion) {
         if (result) {
-            completion(@{@"result":result});
+            completion(result);
         } else {
             completion(nil);
         }
@@ -71,35 +71,35 @@ aaa://targetA/actionB?id=1234
     return result;
 }
 
-- (id _Nullable)sendAction:(NSString * _Nullable)actionString to:(NSString * _Nullable)targetString
+- (id)sendAction:(NSString * _Nullable)actionString to:(NSString * _Nullable)targetString
 {
     return [self sendAction:actionString to:targetString params:nil];
 }
 
-- (id _Nullable)sendAction:(NSString * _Nullable)actionString
-                        to:(NSString * _Nullable)targetString
-                    params:(NSDictionary * _Nullable)params
+- (id)sendAction:(NSString * _Nullable)actionString
+              to:(NSString * _Nullable)targetString
+          params:(NSArray * _Nullable)params
 {
     return [self sendAction:actionString to:targetString params:params cache:NO];
 }
 
-- (id _Nullable)sendAction:(NSString * _Nullable)actionString
-                        to:(NSString * _Nullable)targetString
-                    params:(NSDictionary * _Nullable)params
-                     cache:(BOOL)isCacheTarget
+- (id)sendAction:(NSString * _Nullable)actionString
+              to:(NSString * _Nullable)targetString
+          params:(NSArray * _Nullable)params
+           cache:(BOOL)isCacheTarget
 {
     if (actionString == nil || targetString == nil) {
         return nil;
     }
     
     // 生成target
-    NSString *swiftModuleName = params[RQMediatorSwiftTargetModuleParamsKey];
+//    NSString *swiftModuleName = params[RQMediatorSwiftTargetModuleParamsKey];
     NSString *targetName = nil;
-    if (swiftModuleName.length > 0) {
-        targetName = [NSString stringWithFormat:@"%@.%@",swiftModuleName,targetString];
-    } else {
+//    if (swiftModuleName.length > 0) {
+//        targetName = [NSString stringWithFormat:@"%@.%@",swiftModuleName,targetString];
+//    } else {
         targetName = [NSString stringWithFormat:@"%@",targetString];
-    }
+//    }
     NSObject *target = self.targetCache[targetName];
     if (target == nil) {
         Class targetClass = NSClassFromString(targetName);
@@ -150,88 +150,36 @@ aaa://targetA/actionB?id=1234
 
 #pragma mark - private methods
 
-- (void)_noTargetWith:(NSString *)targetString selectorString:(NSString *)selectorString params:(NSDictionary *)originParams
+- (void)_noTargetWith:(NSString *)targetString selectorString:(NSString *)selectorString params:(NSArray *)originParams
 {
-    SEL action = NSSelectorFromString(@"Action_response:");
-    NSObject *target = [[NSClassFromString(@"Target_NoTargetAction") alloc] init];
-    
-    NSMutableDictionary *params = [NSMutableDictionary dictionary];
-    params[@"originParams"] = originParams;
-    params[@"targetString"] = targetString;
-    params[@"selectorString"] = selectorString;
-    
-    [self _safePerformAction:action target:target params:params];
+//    SEL action = NSSelectorFromString(@"Action_response:");
+//    NSObject *target = [[NSClassFromString(@"Target_NoTargetAction") alloc] init];
+//
+//    NSMutableDictionary *params = [NSMutableDictionary dictionary];
+//    params[@"originParams"] = originParams;
+//    params[@"targetString"] = targetString;
+//    params[@"selectorString"] = selectorString;
+//
+//    [self _safePerformAction:action target:target params:params];
 }
 
-- (id)_safePerformAction:(SEL)action target:(NSObject *)target params:(NSDictionary *)params
+- (id)_safePerformAction:(SEL)action target:(NSObject *)target params:(NSArray *)params
 {
     NSMethodSignature *methodSign = [target methodSignatureForSelector:action];
     if (methodSign == nil) return nil;
     
-    const char *returnType = [methodSign methodReturnType];
-    
-    if (strcmp(returnType, @encode(void)) == 0) {
-        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
-        if (params) {
-            [invocation setArgument:&params atIndex:2];
-        }
-        [invocation setSelector:action];
-        [invocation setTarget:target];
-        [invocation invoke];
-        return nil;
+    NSUInteger count = MIN(methodSign.numberOfArguments - 2, params.count);
+    for (int i = 0; i < count; i++) {
+        
     }
-    
-    if (strcmp(returnType, @encode(BOOL)) == 0) {
-        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
-        if (params) {
-            [invocation setArgument:&params atIndex:2];
-        }
-        [invocation setSelector:action];
-        [invocation setTarget:target];
-        [invocation invoke];
-        BOOL result = NO;
-        [invocation getReturnValue:&result];
-        return @(result);
+    NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
+    if (params) {
+        [invocation setArgument:&params atIndex:2];
     }
+    [invocation setSelector:action];
+    [invocation setTarget:target];
+    [invocation invoke];
     
-    if (strcmp(returnType, @encode(CGFloat)) == 0) {
-        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
-        if (params) {
-            [invocation setArgument:&params atIndex:2];
-        }
-        [invocation setSelector:action];
-        [invocation setTarget:target];
-        [invocation invoke];
-        CGFloat result = 0;
-        [invocation getReturnValue:&result];
-        return @(result);
-    }
-    
-    if (strcmp(returnType, @encode(NSInteger)) == 0) {
-        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
-        if (params) {
-            [invocation setArgument:&params atIndex:2];
-        }
-        [invocation setSelector:action];
-        [invocation setTarget:target];
-        [invocation invoke];
-        NSInteger result = 0;
-        [invocation getReturnValue:&result];
-        return @(result);
-    }
-    
-    if (strcmp(returnType, @encode(NSUInteger)) == 0) {
-        NSInvocation *invocation = [NSInvocation invocationWithMethodSignature:methodSign];
-        if (params) {
-            [invocation setArgument:&params atIndex:2];
-        }
-        [invocation setSelector:action];
-        [invocation setTarget:target];
-        [invocation invoke];
-        NSUInteger result = 0;
-        [invocation getReturnValue:&result];
-        return @(result);
-    }
     
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"

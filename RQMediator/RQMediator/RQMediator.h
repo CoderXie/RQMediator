@@ -19,21 +19,21 @@ extern NSString * const RQMediatorSwiftTargetModuleParamsKey;
 + (instancetype)sharedMediator;
 
 // 外部组件调用入口
-- (id _Nullable)openURL:(NSURL *)url;
+- (id)openURL:(NSURL *)url;
 
-- (id _Nullable)openURL:(NSURL *)url completionHandler:(void (^ _Nullable)(NSDictionary * info))completion;
+- (id)openURL:(NSURL *)url completionHandler:(void (^ _Nullable)(id info))completion;
 
 // 内部组件调用入口
-- (id _Nullable)sendAction:(NSString * _Nullable)actionString to:(NSString * _Nullable)targetString;
+- (id)sendAction:(NSString * _Nullable)actionString to:(NSString * _Nullable)targetString;
 
-- (id _Nullable)sendAction:(NSString * _Nullable)actionString
-                        to:(NSString * _Nullable)targetString
-                    params:(NSDictionary * _Nullable)params;
+- (id)sendAction:(NSString * _Nullable)actionString
+              to:(NSString * _Nullable)targetString
+          params:(NSArray * _Nullable)params;
 
-- (id _Nullable)sendAction:(NSString * _Nullable)actionString
-                        to:(NSString * _Nullable)targetString
-                    params:(NSDictionary * _Nullable)params
-                     cache:(BOOL)isCacheTarget;
+- (id)sendAction:(NSString * _Nullable)actionString
+              to:(NSString * _Nullable)targetString
+          params:(NSArray * _Nullable)params
+           cache:(BOOL)isCacheTarget;
 
 - (void)removeTargetCacheWith:(NSString *)targetName;
 

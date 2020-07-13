@@ -130,8 +130,8 @@
 		2941B5E924B5D7A500FAD065 /* RQMediatorTests */ = {
 			isa = PBXGroup;
 			children = (
-				2941B5EA24B5D7A500FAD065 /* RQMediatorTests.m */,
 				2941B5EC24B5D7A500FAD065 /* Info.plist */,
+				2941B5EA24B5D7A500FAD065 /* RQMediatorTests.m */,
 			);
 			path = RQMediatorTests;
 			sourceTree = "<group>";
