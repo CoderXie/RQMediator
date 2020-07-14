@@ -21,21 +21,23 @@ extern NSString * const RQMediatorSwiftTargetModuleParamsKey;
 // 外部组件调用入口
 - (id)openURL:(NSURL *)url;
 
-- (id)openURL:(NSURL *)url completionHandler:(void (^ _Nullable)(id info))completion;
+- (id)openURL:(NSURL *)url completionHandler:(nullable void (^)(id _Nullable info))completion;
 
 // 内部组件调用入口
-- (id)sendAction:(NSString * _Nullable)actionString to:(NSString * _Nullable)targetString;
+- (id)sendAction:(nonnull NSString *)actionString to:(nonnull NSString *)targetString;
 
-- (id)sendAction:(NSString * _Nullable)actionString
-              to:(NSString * _Nullable)targetString
-          params:(NSArray * _Nullable)params;
+- (id)sendAction:(nonnull NSString *)actionString
+              to:(nonnull NSString *)targetString
+          params:(nullable NSArray *)params;
 
-- (id)sendAction:(NSString * _Nullable)actionString
-              to:(NSString * _Nullable)targetString
-          params:(NSArray * _Nullable)params
+- (id)sendAction:(nonnull NSString *)actionString
+              to:(nonnull NSString *)targetString
+          params:(nullable NSArray *)params
            cache:(BOOL)isCacheTarget;
 
-- (void)removeTargetCacheWith:(NSString *)targetName;
+- (void)setNoTarget:(nonnull NSString *)target action:(nonnull NSString *)action;
+
+- (void)removeTargetCacheWith:(nullable NSString *)targetName;
 
 @end
 

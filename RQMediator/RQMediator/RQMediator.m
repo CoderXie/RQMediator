@@ -9,10 +9,11 @@
 #import "RQMediator.h"
 #import <objc/runtime.h>
 
-NSString * const RQMediatorSwiftTargetModuleParamsKey = @"kRQMediatorSwiftTargetModuleParamsKey";
 @interface RQMediator ()
 
 @property (nonatomic, strong) NSMutableDictionary *targetCache;
+@property (nonatomic, copy) NSString *target;
+@property (nonatomic, copy) NSString *action;
 
 @end
 
@@ -41,7 +42,7 @@ aaa://targetA/actionB?id=1234
     return [self openURL:url completionHandler:NULL];
 }
 
-- (id)openURL:(NSURL *)url completionHandler:(void (^ _Nullable)(id info))completion
+- (id)openURL:(NSURL *)url completionHandler:(nullable void (^)(id _Nullable info))completion
 {
     if (url == nil) return nil;
     
@@ -53,35 +54,30 @@ aaa://targetA/actionB?id=1234
         [params addObject:keyValues.lastObject];
     }
     
-    NSString *action = [url.path stringByReplacingOccurrencesOfString:@"/" withString:@""];
+    NSString *actionString = [url.path stringByReplacingOccurrencesOfString:@"/" withString:@""];
+    id result = [self sendAction:actionString to:url.host params:params cache:NO];
     
-    id result = [self sendAction:action to:url.host params:params cache:NO];
     if (completion) {
-        if (result) {
-            completion(result);
-        } else {
-            completion(nil);
-        }
+        completion(result);
     }
-    
     return result;
 }
 
-- (id)sendAction:(NSString * _Nullable)actionString to:(NSString * _Nullable)targetString
+- (id)sendAction:(nonnull NSString *)actionString to:(nonnull NSString *)targetString
 {
-    return [self sendAction:actionString to:targetString params:nil];
+    return [self sendAction:actionString to:targetString params:@[]];
 }
 
-- (id)sendAction:(NSString * _Nullable)actionString
-              to:(NSString * _Nullable)targetString
-          params:(NSArray * _Nullable)params
+- (id)sendAction:(nonnull NSString *)actionString
+              to:(nonnull NSString *)targetString
+          params:(nullable NSArray *)params
 {
     return [self sendAction:actionString to:targetString params:params cache:NO];
 }
 
-- (id)sendAction:(NSString * _Nullable)actionString
-              to:(NSString * _Nullable)targetString
-          params:(NSArray * _Nullable)params
+- (id)sendAction:(nonnull NSString *)actionString
+              to:(nonnull NSString *)targetString
+          params:(nullable NSArray *)params
            cache:(BOOL)isCacheTarget
 {
     if (actionString == nil || targetString == nil) {
@@ -123,13 +119,20 @@ aaa://targetA/actionB?id=1234
         SEL action = NSSelectorFromString(@"notFound:");
         
         if ([target respondsToSelector:action]) {
-            return [self _safePerformAction:action target:target params:params];
+            NSDictionary *dict = @{@"originParams":params};
+            return [self _safePerformAction:action target:target params:@[dict]];
         } else {
             [self _noTargetWith:targetName selectorString:actionName params:params];
             [self removeTargetCacheWith:targetName];
             return nil;
         }
     }
+}
+
+- (void)setNoTarget:(nonnull NSString *)target action:(nonnull NSString *)action
+{
+    _target = target;
+    _action = action;
 }
 
 - (void)removeTargetCacheWith:(NSString *)targetName
@@ -144,20 +147,19 @@ aaa://targetA/actionB?id=1234
 
 #pragma mark - private methods
 
+// 自定义方法
 - (void)_noTargetWith:(NSString *)targetString selectorString:(NSString *)selectorString params:(NSArray *)originParams
 {
-//    SEL action = NSSelectorFromString(@"Action_response:");
-//    NSObject *target = [[NSClassFromString(@"Target_NoTargetAction") alloc] init];
-//
-//    NSMutableDictionary *params = [NSMutableDictionary dictionary];
-//    params[@"originParams"] = originParams;
-//    params[@"targetString"] = targetString;
-//    params[@"selectorString"] = selectorString;
-//
-//    [self _safePerformAction:action target:target params:params];
+    if (_target == nil || _action == nil) {
+        return;
+    }
+    SEL action = NSSelectorFromString(_action);
+    NSObject *target = [[NSClassFromString(_target) alloc] init];
+    NSDictionary *dict = @{@"originParams":originParams};
+    [self _safePerformAction:action target:target params:@[dict]];
 }
 
-- (id)_safePerformAction:(SEL)action target:(NSObject *)target params:(NSArray *)params
+- (id)_safePerformAction:(SEL)action target:(NSObject *)target params:(nullable NSArray *)params
 {
     NSMethodSignature *methodSign = [target methodSignatureForSelector:action];
     if (methodSign == nil) return nil;

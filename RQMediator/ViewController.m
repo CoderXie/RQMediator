@@ -19,6 +19,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    
+    [[RQMediator sharedMediator] setNoTarget:@"NotFundTarget" action:@"notFound:"];
 }
 
 - (IBAction)logAction:(id)sender
@@ -33,19 +35,18 @@
 //    NSLog(@"%d",res);
 //    NSLog(@"%@",[NSThread callStackSymbols]);
 //    return;
-//    NSArray *params = @[@(2),@(3)];
-//    id result = [[RQMediator sharedMediator] sendAction:@"plusA:b:" to:@"Calculator" params:params];
-//    NSLog(@"%d",[result intValue]);
+    NSArray *params = @[@[@(1),@(2)],@[@(3),@(4)]];
+    id result = [[RQMediator sharedMediator] sendAction:@"testArray:b:" to:@"Calculator" params:params];
+    NSLog(@"%d",[result intValue]);
     
-    NSURL *url = [NSURL URLWithString:@"mediator://Calculator/plusA:b:?a=2&b=3"];
-    id result = [[RQMediator sharedMediator] openURL:url];
-    NSLog(@"%@",result);
+//    NSURL *url = [NSURL URLWithString:@"mediator://Calculator/plusA:b:?a=2&b=3"];
+//    id result = [[RQMediator sharedMediator] openURL:url];
+//    NSLog(@"%@",result);
 }
 
 - (IBAction)nsstring:(id)sender
 {
-    id result = [[RQMediator sharedMediator] sendAction:@"stringForCalculator" to:@"Calculator"];
-    NSLog(@"%@",result);
+    [[RQMediator sharedMediator] sendAction:@"stringForCalculator" to:@"Calculator1" params:@[@(2),@(3)]];
 }
 
 @end

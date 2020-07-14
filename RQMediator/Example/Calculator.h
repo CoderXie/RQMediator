@@ -16,6 +16,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (int)plusA:(NSNumber *)a b:(NSNumber *)b;
 
+- (int)testArray:(NSArray *)a b:(NSArray *)b;
+
 - (NSString *)stringForCalculator;
 
 @end

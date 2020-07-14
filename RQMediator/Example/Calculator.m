@@ -20,6 +20,18 @@
     return a.intValue + b.intValue;
 }
 
+- (int)testArray:(NSArray *)a b:(NSArray *)b
+{
+    int res = 0;
+    for (id obj in a) {
+        res += [obj intValue];
+    }
+    for (id obj in b) {
+        res += [obj intValue];
+    }
+    return res;
+}
+
 - (NSString *)stringForCalculator
 {
     return @"return NSString type";
