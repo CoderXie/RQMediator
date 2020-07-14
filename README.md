@@ -3,6 +3,17 @@
 #### 介绍
 iOS 组件化方案
 
+#### 如何安装
+
+```bash
+
+pod 'RQMediator'
+or
+pod 'RQMediator', :git => 'https://gitee.com/yin_gu/RQMediator.git'
+
+pod install
+```
+
 #### 使用说明
 
 ```objc
