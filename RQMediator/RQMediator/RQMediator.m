@@ -119,7 +119,7 @@ aaa://targetA/actionB?id=1234
         SEL action = NSSelectorFromString(@"notFound:");
         
         if ([target respondsToSelector:action]) {
-            NSDictionary *dict = @{@"originParams":params};
+            NSDictionary *dict = @{@"originParams":params?:@""};
             return [self _safePerformAction:action target:target params:@[dict]];
         } else {
             [self _noTargetWith:targetName selectorString:actionName params:params];
